@@ -1,0 +1,53 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+  data:
+    elasticsearch:
+      repositories:
+        enabled: false
+
+  elasticsearch:
+    rest:
+      uris: search-search-server-7mrlm3oncic3nigpobqr7rkjga.ap-south-1.es.amazonaws.com
+      username: elastic
+      password: Ashish_870609
+server:
+  port: 8090
+  servlet:
+    context-path: /poc
+elastic:
+  integerFields:
+    - Neighborhoods
+    - ZipCodes
+    - SupervisorDistricts
+    - PoliceDistricts
+    - FirePreventionDistricts
+    - PriorPermit
+    - Received
+  longFields:
+    - locationid
+    - cnn
+  stringFields:
+    - Applicant
+    - FacilityType
+    - LocationDescription
+    - Address
+    - blocklot
+    - block
+    - lot
+    - permit
+    - Status
+    - FoodItems
+    - Schedule
+    - dayshours
+    - NOISent
+    - Approved
+  floatFields:
+    - X
+    - Y
+    - Latitude
+    - Longitude
+    - Location
+  dateFields:
+    - ExpirationDate

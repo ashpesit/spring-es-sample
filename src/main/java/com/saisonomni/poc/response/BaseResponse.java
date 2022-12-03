@@ -1,0 +1,19 @@
+package com.saisonomni.poc.response;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.saisonomni.poc.utils.Constants;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class BaseResponse {
+    private Integer errorStatus = Constants.SUCCESS_CODE;
+    private String message = Constants.SUCCESS_MESSAGE;
+
+}
