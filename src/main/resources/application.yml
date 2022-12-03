@@ -17,6 +17,7 @@ server:
   servlet:
     context-path: /poc
 elastic:
+  indexName: foodtruck
   integerFields:
     - Neighborhoods
     - ZipCodes

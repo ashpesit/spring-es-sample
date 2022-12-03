@@ -26,6 +26,7 @@ public class CrudManager {
     @Autowired
     public NullAwareBeanUtilsBean nullAwareBeanUtilsBean;
 
+
     public BaseResponse createDocument(MobileFoodFacility mobileFoodFacility){
         MobileFoodFacility v = mobileFoodFacilityRepository.save(mobileFoodFacility);
         return new CustomCrudResponse(Constants.SUCCESS_CODE,Constants.SUCCESS_MESSAGE,v.getId());

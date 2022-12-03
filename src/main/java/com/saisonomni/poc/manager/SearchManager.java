@@ -12,9 +12,9 @@ import com.saisonomni.poc.request.ElasticRequestQueries;
 import com.saisonomni.poc.request.ElasticRequestQuery;
 import com.saisonomni.poc.request.ElasticRequestSort;
 import com.saisonomni.poc.response.CustomSearchResponse;
+import com.saisonomni.poc.utils.ConfigUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.lucene.util.SloppyMath;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -53,6 +53,9 @@ public class SearchManager {
     @Autowired
     public ObjectMapper objectMapper;
 
+    @Autowired
+    private ConfigUtils configUtils;
+
     private Set<String> integerFields;
 
     private Set<String> longFields;
@@ -65,11 +68,7 @@ public class SearchManager {
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy H:mm:ss");
 
-    @Value("${request.pagination.hard-limit:5}")
-    private Integer paginationLimit;
 
-    @Value("${elastic.mobile-food-facility.index-name:foodtruck}")
-    private String indexName;
 
     @PostConstruct
     void initialize() {
@@ -80,24 +79,6 @@ public class SearchManager {
         dateFields = new HashSet<>(elasticDataTypeMapping.getDateFields());
     }
 
-    @PostConstruct
-    public void printDoc() {
-        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(termQuery("Applicant", "catering"))
-                .withIndices("foodtruck")
-                .build();
-        log.info("search query {}", searchQuery.getQuery());
-        elasticsearchOperations.query(searchQuery, searchResponse -> {
-            if (searchResponse.getHits().getHits().length != 0) {
-                for (SearchHit searchHit : searchResponse.getHits().getHits()) {
-                    System.out.println(searchHit.getScore() + "| " + searchHit.getSourceAsString());
-                }
-                return searchResponse.getHits().getAt(0);
-            }
-            return null;
-        });
-    }
-
     public <T extends AbstractEntity> CustomSearchResponse<T> search(@Nonnull ElasticRequestQueries requestQueries, Class<T> clazz, String indexName) {
         validate(requestQueries);
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder(); // It builds into final search query containing all queries, filtering, sorting and sourceFiltering.
@@ -106,14 +87,14 @@ public class SearchManager {
         SearchQuery searchQuery; // nativeSearchQueryBuilder builds into search query which we pass to ES
 
         // All queries requested are iterated and build here according to their data type.
-        if (!CollectionUtils.isEmpty(requestQueries.getP())) {
+        if (!CollectionUtils.isEmpty(requestQueries.getQueries())) {
 
             GeoDistanceQueryBuilder geoDistanceQueryBuilder = null;
 
             Set<String> skipOperations = new HashSet<>();
 
             Map<String, Set<ElasticRequestQuery>> keyBasedMap = new HashMap<>();
-            for (ElasticRequestQuery p : requestQueries.getP()) {
+            for (ElasticRequestQuery p : requestQueries.getQueries()) {
                 Set<ElasticRequestQuery> set = keyBasedMap.getOrDefault(p.getKey(), new HashSet<>());
                 set.add(p);
                 keyBasedMap.put(p.getKey(), set);
@@ -137,7 +118,7 @@ public class SearchManager {
                 }
             }
         }
-        if (!CollectionUtils.isEmpty(requestQueries.getP()))
+        if (!CollectionUtils.isEmpty(requestQueries.getQueries()))
             queryBuilder = boolQueryBuilder;
         nativeSearchQueryBuilder.withQuery(queryBuilder);
         if (CollectionUtils.isNotEmpty(requestQueries.getSorts())) {
@@ -159,9 +140,9 @@ public class SearchManager {
 
         }
         nativeSearchQueryBuilder.withIndices(indexName);
-        nativeSearchQueryBuilder.withPageable(pageRequestUtil(requestQueries.getPageNo(), requestQueries.getLimit(), paginationLimit));
+        nativeSearchQueryBuilder.withPageable(pageRequestUtil(requestQueries.getPageNo(), requestQueries.getLimit(), configUtils.getPaginationLimit()));
         searchQuery = nativeSearchQueryBuilder.build();
-        log.info("search query {}\n{}", searchQuery.getQuery(),searchQuery.getElasticsearchSorts().get(0));
+        log.info("search query {}", searchQuery.getQuery());
         return elasticsearchOperations.query(searchQuery, searchResponse -> {
             List<T> searchResult = new ArrayList<>();
             if (searchResponse.getHits().getHits().length != 0) {
@@ -224,11 +205,11 @@ public class SearchManager {
     }
 
     public void validate(ElasticRequestQueries requestQueries) {
-        if (null == requestQueries || CollectionUtils.isEmpty(requestQueries.getP()))
+        if (null == requestQueries || CollectionUtils.isEmpty(requestQueries.getQueries()))
             return;
         Map<String, Set<ElasticOperationsEnum>> operationMap = new HashMap<>();
 
-        for (ElasticRequestQuery elasticRequestQuery : requestQueries.getP()) {
+        for (ElasticRequestQuery elasticRequestQuery : requestQueries.getQueries()) {
             String key = elasticRequestQuery.getKey();
             ElasticOperationsEnum operator = elasticRequestQuery.getOperator();
             if (!operator.equals(ElasticOperationsEnum.GROUP_BY)) {
@@ -258,7 +239,7 @@ public class SearchManager {
     }
 
     public CustomSearchResponse<MobileFoodFacility> searchMobileFoodFacility(ElasticRequestQueries requestQueries) {
-        return search(requestQueries, MobileFoodFacility.class, indexName);
+        return search(requestQueries, MobileFoodFacility.class, configUtils.getIndexName());
     }
 
     public CustomSearchResponse<MobileFoodFacility> searchByApplicantName(String applicantName) {
@@ -267,7 +248,7 @@ public class SearchManager {
         requestQuery.setKey("Applicant");
         requestQuery.setOperator(ElasticOperationsEnum.EQ);
         requestQuery.setValue(Collections.singletonList(applicantName));
-        requestQueries.setP(Collections.singletonList(requestQuery));
+        requestQueries.setQueries(Collections.singletonList(requestQuery));
         return searchMobileFoodFacility(requestQueries);
     }
 
@@ -280,7 +261,7 @@ public class SearchManager {
         else
             requestQuery.setOperator(ElasticOperationsEnum.GTE);
         requestQuery.setValue(Collections.singletonList(dateFormat.format(new Date())));
-        requestQueries.setP(Collections.singletonList(requestQuery));
+        requestQueries.setQueries(Collections.singletonList(requestQuery));
         return searchMobileFoodFacility(requestQueries);
     }
 
@@ -297,7 +278,7 @@ public class SearchManager {
         requestQuery.setOperator(ElasticOperationsEnum.LIKE);
         requestQuery.setValue(Collections.singletonList(name));
         list.add(requestQuery);
-        requestQueries.setP(list);
+        requestQueries.setQueries(list);
         return searchMobileFoodFacility(requestQueries);
     }
 
