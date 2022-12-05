@@ -9,11 +9,11 @@ spring:
 
   elasticsearch:
     rest:
-      uris: search-search-server-7mrlm3oncic3nigpobqr7rkjga.ap-south-1.es.amazonaws.com
-      username: elastic
-      password: Ashish_870609
+      uris: es.host
+      username: username
+      password: password
 server:
-  port: 8090
+  port: 5000
   servlet:
     context-path: /poc
 elastic:

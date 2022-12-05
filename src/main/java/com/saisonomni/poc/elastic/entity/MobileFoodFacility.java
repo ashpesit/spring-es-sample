@@ -26,119 +26,119 @@ public class MobileFoodFacility extends AbstractEntity{
 
     @JsonProperty("locationid")
     @Field(type = FieldType.Long, name = "locationid")
-    public Long locationId;
+    private Long locationId;
 
     @JsonProperty("Applicant")
     @Field(type = FieldType.Text, name = "locationid")
-    public String applicant;
+    private String applicant;
 
     @JsonProperty("FacilityType")
     @Field(type = FieldType.Text, name = "FacilityType")
-    public String facilityType;
+    private String facilityType;
 
     @JsonProperty("cnn")
     @Field(type = FieldType.Long, name = "cnn")
-    public Long cnn;
+    private Long cnn;
 
     @JsonProperty("LocationDescription")
     @Field(type = FieldType.Text, name = "LocationDescription")
-    public String locationDescription;
+    private String locationDescription;
 
     @JsonProperty("Address")
     @Field(type = FieldType.Text, name = "Address")
-    public String address;
+    private String address;
 
     @JsonProperty("blocklot")
     @Field(type = FieldType.Text, name = "blocklot")
-    public String blockLot;
+    private String blockLot;
 
     @JsonProperty("block")
     @Field(type = FieldType.Text, name = "block")
-    public String block;
+    private String block;
 
     @Field(type = FieldType.Text, name = "lot")
-    public String lot;
+    private String lot;
 
     @Field(type = FieldType.Text, name = "permit")
-    public String permit;
+    private String permit;
 
     @JsonProperty("Status")
     @Field(type = FieldType.Text, name = "Status")
-    public String status;
+    private String status;
 
     @JsonProperty("FoodItems")
     @Field(type = FieldType.Text, name = "FoodItems")
-    public String foodItems;
+    private String foodItems;
 
     @JsonProperty("X")
     @Field(type = FieldType.Double, name = "X")
-    public Double x;
+    private Double x;
 
     @JsonProperty("Y")
     @Field(type = FieldType.Double, name = "Y")
-    public Double y;
+    private Double y;
 
     @JsonProperty("Latitude")
     @Field(type = FieldType.Text, name = "Latitude")
-    public Double latitude;
+    private Double latitude;
 
     @JsonProperty("Longitude")
     @Field(type = FieldType.Text, name = "Longitude")
-    public Double longitude;
+    private Double longitude;
 
     @JsonProperty("Schedule")
     @Field(type = FieldType.Text, name = "Schedule")
-    public String schedule;
+    private String schedule;
 
     @Field(type = FieldType.Text, name = "dayshours")
-    public String dayshours;
+    private String dayshours;
 
     @JsonProperty("NOISent")
     @Field(type = FieldType.Text, name = "NOISent")
-    public String nOISent;
+    private String nOISent;
 
     @JsonProperty("Approved")
     @Field(type = FieldType.Text, name = "Approved")
-    public String approved;
+    private String approved;
 
     @JsonProperty("Received")
     @Field(type = FieldType.Text, name = "Received")
-    public Integer received;
+    private Integer received;
 
     @JsonProperty("PriorPermit")
     @Field(type = FieldType.Text, name = "PriorPermit")
-    public Integer priorPermit;
+    private Integer priorPermit;
 
     @JsonProperty("ExpirationDate")
     @JsonFormat(pattern="MM/dd/yyyy H:mm:ss")
     @Field(type = FieldType.Text, name = "ExpirationDate")
-    public Date expirationDate;
+    private Date expirationDate;
 
     @JsonProperty("Location")
     @Field(type = FieldType.Text, name = "Location")
-    public String location;
+    private String location;
 
     @JsonProperty("FirePreventionDistricts")
     @Field(type = FieldType.Text, name = "FirePreventionDistricts")
-    public Integer firePreventionDistricts;
+    private Integer firePreventionDistricts;
 
     @JsonProperty("PoliceDistricts")
     @Field(type = FieldType.Text, name = "PoliceDistricts")
-    public Integer policeDistricts;
+    private Integer policeDistricts;
 
     @JsonProperty("SupervisorDistricts")
     @Field(type = FieldType.Text, name = "SupervisorDistricts")
-    public Integer supervisorDistricts;
+    private Integer supervisorDistricts;
 
     @JsonProperty("ZipCodes")
     @Field(type = FieldType.Text, name = "ZipCodes")
-    public Integer zipCodes;
+    private Integer zipCodes;
 
     @JsonProperty("Neighborhoods")
     @Field(type = FieldType.Text, name = "Neighborhoods")
-    public Integer neighborhoods;
+    private Integer neighborhoods;
 
     @JsonProperty("Distance")
     @Transient
-    public Double distance;
+    private Double distance;
 }

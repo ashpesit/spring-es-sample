@@ -15,6 +15,20 @@ public class ConfigUtils {
     @Value("${request.pagination.hard-limit:5}")
     private Integer paginationLimit;
 
+    @Value("${elastic.document.field-name.location-description:LocationDescription}")
+    private String locationDescriptionFieldName;
+
+    @Value("${elastic.document.field-name.address:Address}")
+    private String addressFieldName;
+
+    @Value("${elastic.document.field-name.location:Location}")
+    private String locationFieldName;
+
+    @Value("${elastic.document.field-name.expiration-date:ExpirationDate}")
+    private String expirationDateFieldName;
+
+    @Value("${elastic.document.field-name.applicant:Applicant}")
+    private String applicantFieldName;
 
     @Bean
     public String indexName(){
