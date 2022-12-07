@@ -36,6 +36,7 @@ public class SearchManager {
     /**
      * Generic Search api for searching mobile food facility index.</br>
      * Calls facade class to execute the actual search</br>
+     *
      * @param requestQueries generic search request object.
      * @return list of search result
      */
@@ -45,11 +46,16 @@ public class SearchManager {
 
     /**
      * Search by name of applicant in mobile food facility index.
+     *
      * @param applicantName applicant name
+     * @param page          page no
+     * @param fetchLimit    fetch limit
      * @return list of search result
      */
-    public CustomSearchResponse<MobileFoodFacility> searchByApplicantName(String applicantName) {
+    public CustomSearchResponse<MobileFoodFacility> searchByApplicantName(String applicantName, Integer page, Integer fetchLimit) {
         ElasticRequestQueries requestQueries = new ElasticRequestQueries();
+        requestQueries.setLimit(fetchLimit);
+        requestQueries.setPageNo(page);
         ElasticRequestQuery requestQuery = new ElasticRequestQuery();
         requestQuery.setKey(configUtils.getApplicantFieldName());
         requestQuery.setOperator(ElasticOperationsEnum.EQ);
@@ -60,12 +66,17 @@ public class SearchManager {
 
     /**
      * Search by expiration date, to find whose permits have expired/not expired
+     *
      * @param expiredFlag ture for expired facility; false for not expired facility
+     * @param page        page no
+     * @param fetchLimit  fetch limit
      * @return list of search result
      */
-    public CustomSearchResponse<MobileFoodFacility> searchExpiredFacility(Boolean expiredFlag) {
+    public CustomSearchResponse<MobileFoodFacility> searchExpiredFacility(Boolean expiredFlag, Integer page, Integer fetchLimit) {
         ElasticRequestQueries requestQueries = new ElasticRequestQueries();
         ElasticRequestQuery requestQuery = new ElasticRequestQuery();
+        requestQueries.setLimit(fetchLimit);
+        requestQueries.setPageNo(page);
         requestQuery.setKey(configUtils.getExpirationDateFieldName());
         if (expiredFlag)
             requestQuery.setOperator(ElasticOperationsEnum.LTE);
@@ -78,15 +89,20 @@ public class SearchManager {
 
     /**
      * Search by street name. This uses wild-card search, hence if partial street name should give some result
-     * @param name name of the street
+     *
+     * @param name       name of the street
+     * @param page       page no
+     * @param fetchLimit fetch limit
      * @return list of search result
      */
-    public CustomSearchResponse<MobileFoodFacility> searchByStreetNameLike(String name) {
+    public CustomSearchResponse<MobileFoodFacility> searchByStreetNameLike(String name, Integer page, Integer fetchLimit) {
         ElasticRequestQueries requestQueries = new ElasticRequestQueries();
         ElasticRequestQuery requestQuery = new ElasticRequestQuery();
+        requestQueries.setLimit(fetchLimit);
+        requestQueries.setPageNo(page);
         requestQuery.setKey(configUtils.getLocationDescriptionFieldName());
         requestQuery.setOperator(ElasticOperationsEnum.LIKE);
-        List<ElasticRequestQuery> list=new ArrayList<>();
+        List<ElasticRequestQuery> list = new ArrayList<>();
         requestQuery.setValue(Collections.singletonList(name));
         list.add(requestQuery);
         requestQuery = new ElasticRequestQuery();
@@ -100,24 +116,25 @@ public class SearchManager {
 
     /**
      * Given a delivery location, find out the closest truck possible.
-     * @param lat latitude value
-     * @param log longitude value
+     *
+     * @param lat        latitude
+     * @param lon        longitude
      * @return
      */
-    public CustomSearchResponse<MobileFoodFacility> searchByGeoDistance(double lat,double log) {
+    public CustomSearchResponse<MobileFoodFacility> searchByGeoDistance(Double lat, Double lon) {
         ElasticRequestQueries requestQueries = new ElasticRequestQueries();
-        ElasticRequestSort requestSort=new ElasticRequestSort();
-        List<Double> values=new ArrayList<>();
+        ElasticRequestSort requestSort = new ElasticRequestSort();
+        List<Double> values = new ArrayList<>();
         values.add(lat);
-        values.add(log);
+        values.add(lon);
         requestSort.setValue(values);
         requestSort.setSortType(ElasticSortEnum.GEO_DISTANCE_ASC);
         requestSort.setKey(configUtils.getLocationFieldName());
         requestQueries.setSorts(Collections.singletonList(requestSort));
         requestQueries.setLimit(4);
-        CustomSearchResponse<MobileFoodFacility> wrapper= searchMobileFoodFacility(requestQueries);
-        for(MobileFoodFacility m : wrapper.getDocuments()){
-            m.setDistance(SloppyMath.haversinMeters(lat, log, m.getLatitude(), m.getLongitude()));
+        CustomSearchResponse<MobileFoodFacility> wrapper = searchMobileFoodFacility(requestQueries);
+        for (MobileFoodFacility m : wrapper.getDocuments()) {
+            m.setDistance(SloppyMath.haversinMeters(lat, lon, m.getLatitude(), m.getLongitude()));
         }
         return wrapper;
     }

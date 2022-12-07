@@ -9,9 +9,9 @@ spring:
 
   elasticsearch:
     rest:
-      uris: es.host
-      username: username
-      password: password
+      uris:
+      username:
+      password:
 server:
   port: 5000
   servlet:

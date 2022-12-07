@@ -79,9 +79,10 @@ public class MobileFoodTruckController {
 
     @GetMapping("/search/applicant/{applicantName}")
     @ApiOperation("Search by name of applicant")
-    public ResponseEntity<BaseResponse> searchByApplicantName(@PathVariable("applicantName")String applicantName){
+    public ResponseEntity<BaseResponse> searchByApplicantName(@PathVariable("applicantName")String applicantName,
+                                                              @RequestParam(value = "page", required = false, defaultValue = "0") Integer page, @RequestParam(value = "fetch_limit", required = false, defaultValue = "8") Integer fetchLimit){
         try {
-            return new ResponseEntity<>(searchManager.searchByApplicantName(applicantName), HttpStatus.OK);
+            return new ResponseEntity<>(searchManager.searchByApplicantName(applicantName,page,fetchLimit), HttpStatus.OK);
         } catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));
@@ -89,9 +90,10 @@ public class MobileFoodTruckController {
     }
     @GetMapping("/search/expired")
     @ApiOperation("Search by expiration date, to find whose permits have expired or is valid")
-    public ResponseEntity<BaseResponse> searchExpiredFacility(@RequestParam(value = "v",defaultValue = "true") Boolean expiredFlat){
+    public ResponseEntity<BaseResponse> searchExpiredFacility(@RequestParam(value = "v",defaultValue = "true") Boolean expiredFlat,
+                                                              @RequestParam(value = "page", required = false, defaultValue = "0") Integer page, @RequestParam(value = "fetch_limit", required = false, defaultValue = "8") Integer fetchLimit){
         try {
-            return new ResponseEntity<>(searchManager.searchExpiredFacility(expiredFlat), HttpStatus.OK);
+            return new ResponseEntity<>(searchManager.searchExpiredFacility(expiredFlat,page,fetchLimit), HttpStatus.OK);
         } catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));
@@ -100,9 +102,10 @@ public class MobileFoodTruckController {
 
     @GetMapping("/search/street")
     @ApiOperation("Search by street name (LIKE search)")
-    public ResponseEntity<BaseResponse> searchByStreet(@RequestParam(value = "name",defaultValue = "true") String name){
+    public ResponseEntity<BaseResponse> searchByStreet(@RequestParam(value = "name",defaultValue = "true") String name,
+    @RequestParam(value = "page", required = false, defaultValue = "0") Integer page, @RequestParam(value = "fetch_limit", required = false, defaultValue = "8") Integer fetchLimit){
         try {
-            return new ResponseEntity<>(searchManager.searchByStreetNameLike(name), HttpStatus.OK);
+            return new ResponseEntity<>(searchManager.searchByStreetNameLike(name,page,fetchLimit), HttpStatus.OK);
         } catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));
