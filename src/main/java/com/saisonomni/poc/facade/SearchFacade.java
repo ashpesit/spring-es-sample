@@ -31,7 +31,6 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -89,7 +88,7 @@ public class SearchFacade {
      * @return
      * @param <T> list of search result
      */
-    public <T extends AbstractEntity> CustomSearchResponse<T> search(@Nonnull ElasticRequestQueries requestQueries, Class<T> clazz, String indexName) {
+    public <T extends AbstractEntity> CustomSearchResponse<T> search( ElasticRequestQueries requestQueries, Class<T> clazz, String indexName) {
         validate(requestQueries);
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder(); // It builds into final search query containing all queries, filtering, sorting and sourceFiltering.
         QueryBuilder queryBuilder = QueryBuilders.matchAllQuery(); // Default query in-case of empty query in request

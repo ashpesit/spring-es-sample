@@ -24,9 +24,9 @@ import static io.restassured.RestAssured.given;
 @CucumberContextConfiguration
 @SpringBootTest(classes = InterviewApplication.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 public class StringContextLoader {
-    @Autowired
-    private ObjectMapper objectMapper;
-    private static final String PROFILE_FILE_LOCATION = "./src/test/resources/automation/profile/";
+    private static final ObjectMapper objectMapper=new ObjectMapper();
+    private static final String PROFILE_FILE_LOCATION = "./src/test/resources/profile/";
+
     @PostConstruct
     public void restAssuredSetup() {
         String env = System.getProperty("environment");
@@ -34,7 +34,7 @@ public class StringContextLoader {
             env = "default";
         String baseConfigPath = PROFILE_FILE_LOCATION + env + "/server-info.json";
         try (BufferedReader br = new BufferedReader(new FileReader(baseConfigPath))) {
-            HashMap<String,Object> serverInfo = objectMapper.readValue(br, HashMap.class);
+            HashMap<String, Object> serverInfo = objectMapper.readValue(br, HashMap.class);
             if (serverInfo.containsKey("uri") && serverInfo.get("uri") != null)
                 RestAssured.baseURI = serverInfo.get("uri").toString();
             if (serverInfo.containsKey("port") && serverInfo.get("port") != null)
@@ -44,18 +44,14 @@ public class StringContextLoader {
         }
     }
 
-    public <T> T  execute(Object body,String endPoint,Map<String,String> params,Map<String,String> header,Class<T> clazz,String method) throws IOException {
-        RequestSpecification builder = given().log().all();
-        for(Map.Entry<String,String> entry : header.entrySet())
-            builder=builder.header(entry.getKey(),entry.getValue());
-        for(Map.Entry<String,String> entry : params.entrySet())
-            builder=builder.params(entry.getKey(),entry.getValue());
-        switch (method){
-            case POST: return builder.body(body).when().post(endPoint).as(clazz);
-            case GET: return builder.when().get(endPoint).as(clazz);
-            case PATCH: return builder.body(body).when().patch(endPoint).as(clazz);
-            case PUT: return builder.body(body).when().put(endPoint).as(clazz);
-            case DELETE: return builder.when().delete(endPoint).as(clazz);
+    public static <T> T readObjectFromFile(String filename, Class<T> clazz) {
+        String env = System.getProperty("environment");
+        if (StringUtils.isBlank(env))
+            env = "default";
+        try (BufferedReader br = new BufferedReader(new FileReader(PROFILE_FILE_LOCATION + env + '/' + filename))) {
+            return objectMapper.readValue(br,clazz);
+        } catch (Exception e) {
+            log.error("un-parsable file: {}", e.getMessage());
         }
         return null;
     }

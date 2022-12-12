@@ -3,8 +3,14 @@ package com.saisonomni.poc;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import lombok.RequiredArgsConstructor;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+@RequiredArgsConstructor
 public class SearchStepDefinition {
+    private final ScenarioContext scenarioContext;
+
     @Given("A valid Applicant name of a food truck permit")
     public void aValidApplicantNameOfAFoodTruckPermit() {
     }

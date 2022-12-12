@@ -17,4 +17,10 @@ public class Constants {
     public static final String PUT="put";
     public static final String DELETE="delete";
 
+    public static final String APPLICATION_JSON = "application/json";
+
+    public static final String CONTENT_TYPE = "Content-type";
+
+    public static final String ACCEPT = "Accept";
+
 }

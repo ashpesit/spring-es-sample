@@ -15,7 +15,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.Date;
 
-@Document(indexName = "#{@indexName}",type = "_doc")
+@Document(indexName = "#{@indexName}", type = "_doc")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -29,7 +29,7 @@ public class MobileFoodFacility extends AbstractEntity{
     private Long locationId;
 
     @JsonProperty("Applicant")
-    @Field(type = FieldType.Text, name = "locationid")
+    @Field(type = FieldType.Text, name = "Applicant")
     private String applicant;
 
     @JsonProperty("FacilityType")

@@ -1,6 +1,7 @@
 package com.saisonomni.poc.controller;
 
 import com.saisonomni.poc.elastic.entity.MobileFoodFacility;
+import com.saisonomni.poc.exception.RecordNotFoundException;
 import com.saisonomni.poc.manager.CrudManager;
 import com.saisonomni.poc.manager.SearchManager;
 import com.saisonomni.poc.request.ElasticRequestQueries;
@@ -40,7 +41,11 @@ public class MobileFoodTruckController {
     public ResponseEntity<BaseResponse> readDocument(@PathVariable("id")String id){
         try {
             return new ResponseEntity<>(crudManager.readDocument(id), HttpStatus.OK);
-        } catch (Exception e) {
+        }
+        catch (RecordNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new BaseResponse(1,e.getMessage()));
+        }
+        catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));
         }
