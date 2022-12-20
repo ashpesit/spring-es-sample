@@ -69,7 +69,6 @@ public class SearchFacade {
     private ConfigUtils configUtils;
 
 
-
     @PostConstruct
     void initialize() {
         integerFields = new HashSet<>(elasticDataTypeMapping.getIntegerFields());
@@ -82,13 +81,14 @@ public class SearchFacade {
 
     /**
      * A generic search function that takes in a search request object which has all the information required for search document sorting them etc; in elasticsearch
+     *
      * @param requestQueries generic search request object
-     * @param clazz Data type of search result object
-     * @param indexName name of the index where search will be performed
+     * @param clazz          Data type of search result object
+     * @param indexName      name of the index where search will be performed
+     * @param <T>            list of search result
      * @return
-     * @param <T> list of search result
      */
-    public <T extends AbstractEntity> CustomSearchResponse<T> search( ElasticRequestQueries requestQueries, Class<T> clazz, String indexName) {
+    public <T extends AbstractEntity> CustomSearchResponse<T> search(ElasticRequestQueries requestQueries, Class<T> clazz, String indexName) {
         validate(requestQueries);
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder(); // It builds into final search query containing all queries, filtering, sorting and sourceFiltering.
         QueryBuilder queryBuilder = QueryBuilders.matchAllQuery(); // Default query in-case of empty query in request
@@ -98,34 +98,42 @@ public class SearchFacade {
         // All queries requested are iterated and build here according to their data type.
         if (!CollectionUtils.isEmpty(requestQueries.getQueries())) {
 
-            GeoDistanceQueryBuilder geoDistanceQueryBuilder = null;
-
-            Set<String> skipOperations = new HashSet<>();
-
             Map<String, Set<ElasticRequestQuery>> keyBasedMap = new HashMap<>();
-            for (ElasticRequestQuery p : requestQueries.getQueries()) {
-                Set<ElasticRequestQuery> set = keyBasedMap.getOrDefault(p.getKey(), new HashSet<>());
-                set.add(p);
-                keyBasedMap.put(p.getKey(), set);
-            }
-            for (Map.Entry<String, Set<ElasticRequestQuery>> e : keyBasedMap.entrySet()) {
-                String k = e.getKey();
-                Set<ElasticRequestQuery> o = e.getValue();
-                if (integerFields.contains(k)) {
-                    List<Integer> integerValues = o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).map(Integer::parseInt).collect(Collectors.toList());
-                    addQuery(boolQueryBuilder, k, o, integerValues);
-                } else if (longFields.contains(k)) {
-                    List<Long> longValues = o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).map(Long::parseLong).collect(Collectors.toList());
-                    addQuery(boolQueryBuilder, k, o, longValues);
-                } else if (stringFields.contains(k)) {
-                    addQuery(boolQueryBuilder, k, o, o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).collect(Collectors.toList()));
-                } else if (floatFields.contains(k)) {
-                    List<Float> floatValues = o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).map(Float::parseFloat).collect(Collectors.toList());
-                    addQuery(boolQueryBuilder, k, o, floatValues);
-                }else if (dateFields.contains(k)) {
-                    addQuery(boolQueryBuilder, k, o, o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).collect(Collectors.toList()));
+            int queryListSize=CollectionUtils.size(requestQueries.getQueries());
+            for (List<ElasticRequestQuery> pList : requestQueries.getQueries()) {
+                BoolQueryBuilder andBoolQueryBuilder = QueryBuilders.boolQuery();
+                for (ElasticRequestQuery p : pList) {
+                    Set<ElasticRequestQuery> set = keyBasedMap.getOrDefault(p.getKey(), new HashSet<>());
+                    set.add(p);
+                    keyBasedMap.put(p.getKey(), set);
+                }
+
+                for (Map.Entry<String, Set<ElasticRequestQuery>> e : keyBasedMap.entrySet()) {
+                    String k = e.getKey();
+                    Set<ElasticRequestQuery> o = e.getValue();
+                    if (integerFields.contains(k)) {
+                        List<Integer> integerValues = o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).map(Integer::parseInt).collect(Collectors.toList());
+                        addQuery(andBoolQueryBuilder, k, o, integerValues);
+                    } else if (longFields.contains(k)) {
+                        List<Long> longValues = o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).map(Long::parseLong).collect(Collectors.toList());
+                        addQuery(andBoolQueryBuilder, k, o, longValues);
+                    } else if (stringFields.contains(k)) {
+                        addQuery(andBoolQueryBuilder, k, o, o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).collect(Collectors.toList()));
+                    } else if (floatFields.contains(k)) {
+                        List<Float> floatValues = o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).map(Float::parseFloat).collect(Collectors.toList());
+                        addQuery(andBoolQueryBuilder, k, o, floatValues);
+                    } else if (dateFields.contains(k)) {
+                        addQuery(andBoolQueryBuilder, k, o, o.stream().map(ElasticRequestQuery::getValue).flatMap(Collection::stream).collect(Collectors.toList()));
+                    }
+                }
+                if(queryListSize<=1)
+                    boolQueryBuilder=andBoolQueryBuilder;
+                else {
+                    boolQueryBuilder=boolQueryBuilder.should(andBoolQueryBuilder);
                 }
             }
+            if(queryListSize>1)
+                boolQueryBuilder=boolQueryBuilder.minimumShouldMatch(1);
         }
         if (!CollectionUtils.isEmpty(requestQueries.getQueries()))
             queryBuilder = boolQueryBuilder;
@@ -134,12 +142,12 @@ public class SearchFacade {
             for (ElasticRequestSort sort : requestQueries.getSorts()) {
                 if (sort.getSortType().equals(ElasticSortEnum.ASC))
                     nativeSearchQueryBuilder.withSort(new FieldSortBuilder(sort.getKey()).order(SortOrder.ASC));
-                else if(sort.getSortType().equals(ElasticSortEnum.DESC))
+                else if (sort.getSortType().equals(ElasticSortEnum.DESC))
                     nativeSearchQueryBuilder.withSort(new FieldSortBuilder(sort.getKey()).order(SortOrder.DESC));
-                else if(sort.getSortType().equals(ElasticSortEnum.GEO_DISTANCE_ASC))
-                    nativeSearchQueryBuilder.withSort(new GeoDistanceSortBuilder(sort.getKey(),sort.getValue().get(0),sort.getValue().get(1)).unit(DistanceUnit.METERS).order(SortOrder.ASC));
-                else if(sort.getSortType().equals(ElasticSortEnum.GEO_DISTANCE_DESC))
-                    nativeSearchQueryBuilder.withSort(new GeoDistanceSortBuilder(sort.getKey(),sort.getValue().get(0),sort.getValue().get(1)).unit(DistanceUnit.METERS).order(SortOrder.DESC));
+                else if (sort.getSortType().equals(ElasticSortEnum.GEO_DISTANCE_ASC))
+                    nativeSearchQueryBuilder.withSort(new GeoDistanceSortBuilder(sort.getKey(), sort.getValue().get(0), sort.getValue().get(1)).unit(DistanceUnit.METERS).order(SortOrder.ASC));
+                else if (sort.getSortType().equals(ElasticSortEnum.GEO_DISTANCE_DESC))
+                    nativeSearchQueryBuilder.withSort(new GeoDistanceSortBuilder(sort.getKey(), sort.getValue().get(0), sort.getValue().get(1)).unit(DistanceUnit.METERS).order(SortOrder.DESC));
             }
         }
 
@@ -154,16 +162,15 @@ public class SearchFacade {
         log.info("search query {}", searchQuery.getQuery());
         return elasticsearchOperations.query(searchQuery, searchResponse -> {
             List<T> searchResult = new ArrayList<>();
-            if (searchResponse.getHits().getHits().length != 0) {
-                for (SearchHit searchHit : searchResponse.getHits().getHits()) {
-                    T document;
-                    try {
-                        document = objectMapper.readValue(searchHit.getSourceAsString(), clazz);
-                        document.setId(searchHit.getId());
-                        searchResult.add(document);
-                    } catch (JsonProcessingException e) {
-                        log.error("Error in extract", e);
-                    }
+            searchResponse.getHits();
+            for (SearchHit searchHit : searchResponse.getHits().getHits()) {
+                T document;
+                try {
+                    document = objectMapper.readValue(searchHit.getSourceAsString(), clazz);
+                    document.setId(searchHit.getId());
+                    searchResult.add(document);
+                } catch (JsonProcessingException e) {
+                    log.error("Error in extract", e);
                 }
             }
             return new CustomSearchResponse<>(searchResult, null, requestQueries.getPageNo(), searchResponse.getHits().getTotalHits());
@@ -172,9 +179,10 @@ public class SearchFacade {
 
     /**
      * Adds new query to the final bool query builder that will be executed
+     *
      * @param boolQueryBuilder boolean query builder where query is added
-     * @param key field name in the search condition
-     * @param querySet query set which contains operator type and values
+     * @param key              field name in the search condition
+     * @param querySet         query set which contains operator type and values
      * @param values
      */
     public void addQuery(BoolQueryBuilder boolQueryBuilder, String key, Set<ElasticRequestQuery> querySet, List<?> values) {
@@ -225,33 +233,35 @@ public class SearchFacade {
             return;
         Map<String, Set<ElasticOperationsEnum>> operationMap = new HashMap<>();
 
-        for (ElasticRequestQuery elasticRequestQuery : requestQueries.getQueries()) {
-            String key = elasticRequestQuery.getKey();
-            ElasticOperationsEnum operator = elasticRequestQuery.getOperator();
-            if (!operator.equals(ElasticOperationsEnum.GROUP_BY)) {
-                if (!operationMap.containsKey(key))
-                    operationMap.put(key, new HashSet<>());
-                else if (operationMap.get(key).contains(operator) || !((operationMap.get(key).contains(ElasticOperationsEnum.GTE) && operator.equals(ElasticOperationsEnum.LTE)) || (operationMap.get(key).contains(ElasticOperationsEnum.LTE) && operator.equals(ElasticOperationsEnum.GTE))))
-                    throw new InvalidRequestException("Cannot execute multiple operation, key - " + elasticRequestQuery.getKey());
+        for (List<ElasticRequestQuery> elasticRequestQueryList : requestQueries.getQueries()) {
+            for (ElasticRequestQuery elasticRequestQuery : elasticRequestQueryList) {
+                String key = elasticRequestQuery.getKey();
+                ElasticOperationsEnum operator = elasticRequestQuery.getOperator();
+                if (!operator.equals(ElasticOperationsEnum.GROUP_BY)) {
+                    if (!operationMap.containsKey(key))
+                        operationMap.put(key, new HashSet<>());
+                    else if (operationMap.get(key).contains(operator) || !((operationMap.get(key).contains(ElasticOperationsEnum.GTE) && operator.equals(ElasticOperationsEnum.LTE)) || (operationMap.get(key).contains(ElasticOperationsEnum.LTE) && operator.equals(ElasticOperationsEnum.GTE))))
+                        throw new InvalidRequestException("Cannot execute multiple operation, key - " + elasticRequestQuery.getKey());
 
-                operationMap.get(key).add(operator);
-                if (!operator.equals(ElasticOperationsEnum.NOT_EMPTY)) {
-                    if (CollectionUtils.isEmpty(elasticRequestQuery.getValue())) {
-                        throw new InvalidRequestException("Empty value for key-" + key + " and operation-" + operator);
+                    operationMap.get(key).add(operator);
+                    if (!operator.equals(ElasticOperationsEnum.NOT_EMPTY)) {
+                        if (CollectionUtils.isEmpty(elasticRequestQuery.getValue())) {
+                            throw new InvalidRequestException("Empty value for key-" + key + " and operation-" + operator);
+                        }
+                    }
+                    if (stringFields.contains(key) && (operationMap.get(key).contains(ElasticOperationsEnum.GTE) || operationMap.get(key).contains(ElasticOperationsEnum.LTE))) {
+                        throw new InvalidRequestException("Invalid operation for key " + key);
                     }
                 }
-                if (stringFields.contains(key) && (operationMap.get(key).contains(ElasticOperationsEnum.GTE) || operationMap.get(key).contains(ElasticOperationsEnum.LTE))) {
-                    throw new InvalidRequestException("Invalid operation for key " + key);
-                }
             }
-
         }
     }
 
     /**
      * page request builder for limit the search result
-     * @param page page no; 1 indexed
-     * @param limit limit value
+     *
+     * @param page      page no; 1 indexed
+     * @param limit     limit value
      * @param hardLimit configured hard limit
      * @return
      */

@@ -107,7 +107,7 @@ public class MobileFoodTruckController {
 
     @GetMapping("/search/street")
     @ApiOperation("Search by street name (LIKE search)")
-    public ResponseEntity<BaseResponse> searchByStreet(@RequestParam(value = "name",defaultValue = "true") String name,
+    public ResponseEntity<BaseResponse> searchByStreet(@RequestParam(value = "name") String name,
     @RequestParam(value = "page", required = false, defaultValue = "0") Integer page, @RequestParam(value = "fetch_limit", required = false, defaultValue = "8") Integer fetchLimit){
         try {
             return new ResponseEntity<>(searchManager.searchByStreetNameLike(name,page,fetchLimit), HttpStatus.OK);
@@ -119,9 +119,10 @@ public class MobileFoodTruckController {
 
     @GetMapping("/search/geo-distance")
     @ApiModelProperty("Given a delivery location, find out the closest truck possible.")
-    public ResponseEntity<BaseResponse> searchByStreet(@RequestParam(value = "lat") Double lat, @RequestParam(value = "lon") Double lon){
+    public ResponseEntity<BaseResponse> searchByStreet(@RequestParam(value = "lat") Double lat, @RequestParam(value = "lon") Double lon,
+                                                       @RequestParam(value = "fetch_limit", required = false, defaultValue = "4") Integer fetchLimit){
         try {
-            return new ResponseEntity<>(searchManager.searchByGeoDistance(lat,lon), HttpStatus.OK);
+            return new ResponseEntity<>(searchManager.searchByGeoDistance(lat,lon,fetchLimit), HttpStatus.OK);
         } catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));

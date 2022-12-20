@@ -47,11 +47,11 @@ For search, I made a generic search api which can be used to query any field in 
 ##### Generic Search API request object #####
 ```json
 {
-  "queries": [{         // list of boolean query to be applied
+  "queries": [[{         // list of boolean query to be applied
     "key":"locationid", // Field name of which query condition is applied
     "operator":"EQ",    // Operation type eg EQ, GTE, LTE, LIKE
     "value":["1660620"] // Value to be applied on the condition
-  }],
+  }]],
   "limit": 1,           // no of document to be fetched
   "page": 1,            // page no of the request
   "fields":["locationid","Applicant","FacilityType","cnn","LocationDescription"], // list of fields that is to be fetched

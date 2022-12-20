@@ -13,6 +13,7 @@ Feature: Search based on different fields
     Then List of document of non expired permit is received
 
   Scenario: Search by street name
+    Given A valid street name of a food truck
     When Request to search by street name is made
     Then List of document of food facility on that street is received
 
@@ -20,4 +21,4 @@ Feature: Search based on different fields
   Scenario: Given a delivery location, find out the closest truck possible.
     Given A valid value of latitude and longitude
     When Request to search the nearest food truck is made
-    Then List of 4 trucks closest to that location is received
+    Then List of trucks closest to that location is received

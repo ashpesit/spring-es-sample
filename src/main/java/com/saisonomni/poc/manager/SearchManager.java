@@ -60,7 +60,8 @@ public class SearchManager {
         requestQuery.setKey(configUtils.getApplicantFieldName());
         requestQuery.setOperator(ElasticOperationsEnum.EQ);
         requestQuery.setValue(Collections.singletonList(applicantName));
-        requestQueries.setQueries(Collections.singletonList(requestQuery));
+        List<ElasticRequestQuery> q = Collections.singletonList(requestQuery);
+        requestQueries.setQueries(Collections.singletonList(q));
         return searchMobileFoodFacility(requestQueries);
     }
 
@@ -83,7 +84,8 @@ public class SearchManager {
         else
             requestQuery.setOperator(ElasticOperationsEnum.GTE);
         requestQuery.setValue(Collections.singletonList(dateFormat.format(new Date())));
-        requestQueries.setQueries(Collections.singletonList(requestQuery));
+        List<ElasticRequestQuery> q = Collections.singletonList(requestQuery);
+        requestQueries.setQueries(Collections.singletonList(q));
         return searchMobileFoodFacility(requestQueries);
     }
 
@@ -102,15 +104,19 @@ public class SearchManager {
         requestQueries.setPageNo(page);
         requestQuery.setKey(configUtils.getLocationDescriptionFieldName());
         requestQuery.setOperator(ElasticOperationsEnum.LIKE);
+        List<List<ElasticRequestQuery>> queriesList=new ArrayList<>();
         List<ElasticRequestQuery> list = new ArrayList<>();
         requestQuery.setValue(Collections.singletonList(name));
         list.add(requestQuery);
+        queriesList.add(list);
+        list=new ArrayList<>();
         requestQuery = new ElasticRequestQuery();
         requestQuery.setKey(configUtils.getAddressFieldName());
         requestQuery.setOperator(ElasticOperationsEnum.LIKE);
         requestQuery.setValue(Collections.singletonList(name));
         list.add(requestQuery);
-        requestQueries.setQueries(list);
+        queriesList.add(list);
+        requestQueries.setQueries(queriesList);
         return searchMobileFoodFacility(requestQueries);
     }
 
@@ -119,9 +125,10 @@ public class SearchManager {
      *
      * @param lat        latitude
      * @param lon        longitude
+     * @param fetchLimit no of values to be fetched
      * @return
      */
-    public CustomSearchResponse<MobileFoodFacility> searchByGeoDistance(Double lat, Double lon) {
+    public CustomSearchResponse<MobileFoodFacility> searchByGeoDistance(Double lat, Double lon, Integer fetchLimit) {
         ElasticRequestQueries requestQueries = new ElasticRequestQueries();
         ElasticRequestSort requestSort = new ElasticRequestSort();
         List<Double> values = new ArrayList<>();
@@ -131,7 +138,7 @@ public class SearchManager {
         requestSort.setSortType(ElasticSortEnum.GEO_DISTANCE_ASC);
         requestSort.setKey(configUtils.getLocationFieldName());
         requestQueries.setSorts(Collections.singletonList(requestSort));
-        requestQueries.setLimit(4);
+        requestQueries.setLimit(fetchLimit);
         CustomSearchResponse<MobileFoodFacility> wrapper = searchMobileFoodFacility(requestQueries);
         for (MobileFoodFacility m : wrapper.getDocuments()) {
             m.setDistance(SloppyMath.haversinMeters(lat, lon, m.getLatitude(), m.getLongitude()));

@@ -17,7 +17,7 @@ public class ElasticRequestQueries {
 
     @Valid
     @ApiModelProperty("list of boolean condition to be applied in es query")
-    private List<ElasticRequestQuery> queries;
+    private List<List<ElasticRequestQuery>> queries;
     @ApiModelProperty("no of documents to be returned")
     private Integer limit;
     @ApiModelProperty("page no of the request")
