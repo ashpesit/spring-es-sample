@@ -85,11 +85,11 @@ Generic Search Api
 curl --location --request POST 'http://springeb-env.eba-6psgyhye.ap-south-1.elasticbeanstalk.com/poc/mobile-food-facility/v1/search' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "queries": [{
+    "queries": [[{
         "key":"locationid",
         "operator":"EQ",
         "value":["1660620"]
-    }],
+    }]],
     "limit": 1,
     "fields":["locationid","Applicant","FacilityType","cnn","LocationDescription"]
 }'
