@@ -28,11 +28,11 @@ import java.util.Collections;
 import java.util.Optional;
 
 /**
- * This c
+ * This class manages crud request for food trucks
  */
 @Log4j2
 @Service
-public class CrudManager {
+public class MobileFoodTruckCrudManager {
     @Autowired
     public MobileFoodFacilityRepository mobileFoodFacilityRepository;
 

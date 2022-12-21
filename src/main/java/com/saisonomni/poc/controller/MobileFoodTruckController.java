@@ -2,7 +2,7 @@ package com.saisonomni.poc.controller;
 
 import com.saisonomni.poc.elastic.entity.MobileFoodFacility;
 import com.saisonomni.poc.exception.RecordNotFoundException;
-import com.saisonomni.poc.manager.CrudManager;
+import com.saisonomni.poc.manager.MobileFoodTruckCrudManager;
 import com.saisonomni.poc.manager.SearchManager;
 import com.saisonomni.poc.request.ElasticRequestQueries;
 import com.saisonomni.poc.response.BaseResponse;
@@ -25,12 +25,12 @@ public class MobileFoodTruckController {
     public SearchManager searchManager;
 
     @Autowired
-    public CrudManager crudManager;
+    public MobileFoodTruckCrudManager mobileFoodTruckCrudManager;
     @PostMapping
     @ApiOperation(value = "Create and save new records in elastic search", response = BaseResponse.class)
     public ResponseEntity<BaseResponse> saveDocument(@RequestBody MobileFoodFacility mobileFoodFacility){
         try {
-            return new ResponseEntity<>(crudManager.createDocument(mobileFoodFacility), HttpStatus.OK);
+            return new ResponseEntity<>(mobileFoodTruckCrudManager.createDocument(mobileFoodFacility), HttpStatus.OK);
         } catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));
@@ -40,7 +40,7 @@ public class MobileFoodTruckController {
     @ApiOperation(value = "Read or get document from elastic search", response = BaseResponse.class)
     public ResponseEntity<BaseResponse> readDocument(@PathVariable("id")String id){
         try {
-            return new ResponseEntity<>(crudManager.readDocument(id), HttpStatus.OK);
+            return new ResponseEntity<>(mobileFoodTruckCrudManager.readDocument(id), HttpStatus.OK);
         }
         catch (RecordNotFoundException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new BaseResponse(1,e.getMessage()));
@@ -54,7 +54,7 @@ public class MobileFoodTruckController {
     @ApiOperation(value = "Update a document in elasticsearch database", response = BaseResponse.class)
     public ResponseEntity<BaseResponse> updateDocument(@RequestBody MobileFoodFacility mobileFoodFacility){
         try {
-            return new ResponseEntity<>(crudManager.updateDocument(mobileFoodFacility), HttpStatus.OK);
+            return new ResponseEntity<>(mobileFoodTruckCrudManager.updateDocument(mobileFoodFacility), HttpStatus.OK);
         } catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));
@@ -64,7 +64,7 @@ public class MobileFoodTruckController {
     @ApiOperation(value = "Deletes a record in database", response = BaseResponse.class)
     public ResponseEntity<BaseResponse> deleteDocument(@PathVariable("id")String id){
         try {
-            return new ResponseEntity<>(crudManager.deleteDocument(id), HttpStatus.OK);
+            return new ResponseEntity<>(mobileFoodTruckCrudManager.deleteDocument(id), HttpStatus.OK);
         } catch (Exception e) {
             log.error(Constants.ERROR_OCCURRED, ExceptionUtils.getStackTrace(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(1,Constants.FAILURE_MESSAGE));
