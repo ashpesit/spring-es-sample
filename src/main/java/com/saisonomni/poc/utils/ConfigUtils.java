@@ -30,6 +30,15 @@ public class ConfigUtils {
     @Value("${elastic.document.field-name.applicant:Applicant}")
     private String applicantFieldName;
 
+    @Value("${ES_URL}")
+    private String esDomain;
+
+    @Value("${ES_USER}")
+    private String esUser;
+
+    @Value("${ES_PASS}")
+    private String esPass;
+
     @Bean
     public String indexName(){
         return indexName;

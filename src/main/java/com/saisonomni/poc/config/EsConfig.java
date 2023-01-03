@@ -1,6 +1,7 @@
 
 package com.saisonomni.poc.config;
 
+import com.saisonomni.poc.utils.ConfigUtils;
 import lombok.Data;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -11,7 +12,7 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -20,13 +21,10 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 
 @Data
 @Configuration
-@ConfigurationProperties("spring.elasticsearch.rest")
 @EnableElasticsearchRepositories(basePackages = "com.saisonomni.poc.elastic.repository")
 public class EsConfig {
-
-    private String uris;
-    private String username;
-    private String password;
+    @Autowired
+    private ConfigUtils configUtils;
     private Integer port = 443; // 9092
     private String protocol = "https";
 
@@ -34,9 +32,9 @@ public class EsConfig {
     public RestHighLevelClient client() {
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(username, password));
+                new UsernamePasswordCredentials(configUtils.getEsUser(), configUtils.getEsPass()));
 
-        RestClientBuilder builder = RestClient.builder(new HttpHost(uris, port, protocol))
+        RestClientBuilder builder = RestClient.builder(new HttpHost(configUtils.getEsDomain(), port, protocol))
                 .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
                     @Override
                     public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {

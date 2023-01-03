@@ -6,12 +6,6 @@ spring:
     elasticsearch:
       repositories:
         enabled: false
-
-  elasticsearch:
-    rest:
-      uris:
-      username:
-      password:
 server:
   port: 5000
   servlet:
